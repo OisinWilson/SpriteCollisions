@@ -34,20 +34,18 @@ int main()
 
 
 
-	bool mouse_changer[3]{ 0,0,0 };
+	bool mouse_changer[3]{ 1,0,0 };
 
-	//Setup mouse AABB
+	//Setup mouse
 	c2AABB aabb_mouse;
 	aabb_mouse.min = c2V(mouse.getPosition().x, mouse.getPosition().y);
 	aabb_mouse.max = c2V(mouse.getGlobalBounds().width, mouse.getGlobalBounds().width);
 
 	c2Circle circle_mouse;
-	circle_mouse.p = aabb_mouse.min;
+	circle_mouse.p = { aabb_mouse.min.x + 42, aabb_mouse.min.y + 42 };
 	circle_mouse.r = 42;
 
 	c2Ray ray_mouse;
-	//ray_mouse.p = aabb_mouse.min;
-	//ray_mouse
 
 
 	// Setup Players Default Animated Sprite
@@ -59,16 +57,29 @@ int main()
 	animated_sprite.addFrame(sf::IntRect(343, 3, 84, 84));
 	animated_sprite.addFrame(sf::IntRect(428, 3, 84, 84));
 
-	// Setup Players AABB
+	// Setup Player
 	c2AABB aabb_player;
 	aabb_player.min = c2V(animated_sprite.getPosition().x, animated_sprite.getPosition().y);
-	aabb_player.max = c2V(animated_sprite.getGlobalBounds().width / animated_sprite.getFrames().size(), 
+	aabb_player.max = c2V(animated_sprite.getGlobalBounds().width / animated_sprite.getFrames().size(),
 		animated_sprite.getGlobalBounds().height / animated_sprite.getFrames().size());
 
 	c2Capsule capsule_player;
-	c2Poly polygon_player;
+
+	c2Poly * polygon_player = new c2Poly;
+
+	polygon_player->count = 4;
+
+	polygon_player->verts[0] = { animated_sprite.getGlobalBounds().width / animated_sprite.getFrames().size(),
+		animated_sprite.getGlobalBounds().height / animated_sprite.getFrames().size() };
+	polygon_player->verts[1] = {0,0};
+	polygon_player->verts[2] = {0,0};
+	polygon_player->verts[3] = {0,0};
+
+
 	c2Circle circle_player;
+
 	c2Ray ray_player;
+
 
 	// Setup the Player
 	Player player(animated_sprite);
@@ -86,6 +97,9 @@ int main()
 		// Update mouse AABB
 		aabb_mouse.min = c2V(mouse.getPosition().x, mouse.getPosition().y);
 		aabb_mouse.max = c2V(mouse.getGlobalBounds().width, mouse.getGlobalBounds().width);
+
+		circle_mouse.p = { aabb_mouse.min.x + 42, aabb_mouse.min.y + 42 };
+
 
 		// Process events
 		sf::Event event;
@@ -115,18 +129,21 @@ int main()
 					mouse_changer[0] = 1;
 					mouse_changer[1] = 0;
 					mouse_changer[2] = 0;
+
 				}
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
 				{
 					mouse_changer[0] = 0;
 					mouse_changer[1] = 1;
 					mouse_changer[2] = 0;
+
 				}
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
 				{
 					mouse_changer[0] = 0;
 					mouse_changer[1] = 0;
 					mouse_changer[2] = 1;
+
 				}
 				break;
 			default:
@@ -142,22 +159,43 @@ int main()
 		player.update();
 
 
+
+
 		// Check for collisions
 		if (mouse_changer[0])	// AABB
 		{
-			result = c2AABBtoAABB(aabb_mouse, aabb_player);
-			cout << ((result != 0) ? ("Collision AABB - AABB") : "") << endl;
+			//result = c2AABBtoAABB(aabb_mouse, aabb_player);
+			//cout << ((result != 0) ? ("Collision AABB - AABB") : "") << endl;
 
-			result = c2AABBtoCapsule(aabb_mouse, capsule_player);
-			cout << ((result != 0) ? ("Collision AABB - Capsule") : "") << endl;
+			//result = c2AABBtoCapsule(aabb_mouse, capsule_player);
+		//	cout << ((result != 0) ? ("Collision AABB - Capsule") : "") << endl;
+
+			result = c2AABBtoPoly(aabb_mouse, polygon_player, NULL);
+			cout << ((result != 0) ? ("Collision AABB - Poly") : "") << endl;
+
+			//ray
+
 		}
 		else if (mouse_changer[1]) // Circle
 		{
+			result = c2CircletoAABB(circle_mouse, aabb_player);
+			cout << ((result != 0) ? ("Collision Circle - AABB") : "") << endl;
+
+			//result = c2CircletoCircle(circle_mouse, circle_player);
+			//cout << ((result != 0) ? ("Collision Circle - Circle") : "") << endl;
+
+			//result = c2CircletoCapsule(circle_mouse, capsule_player);
+			//cout << ((result != 0) ? ("Collision Circle - Capsule") : "") << endl;
+
+		//	result = c2CircletoPoly(circle_mouse, polygon_player, transformation);
+		//	cout << ((result != 0) ? ("Collision Circle - Poly") : "") << endl;
+
+			//ray
 
 		}
 		else if (mouse_changer[2]) // Ray
 		{
-
+			
 		}
 		
 		
@@ -169,7 +207,7 @@ int main()
 		
 
 
-
+		// change colour for intersection, 
 		if (result){
 			player.getAnimatedSprite().setColor(sf::Color(255,0,0));
 		}
