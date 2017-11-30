@@ -7,6 +7,11 @@
 #include <Input.h>
 #include <Debug.h>
 
+#include<Tinyc2Debug.hpp>
+
+
+// make sure to get rid of the debug before final solution
+
 using namespace std;
 
 int main()
@@ -14,6 +19,8 @@ int main()
 	// Create the main window
 	sf::RenderWindow window(sf::VideoMode(800, 600), "SFML window");
 
+
+	Tinyc2Debug g(window);
 	// Load a sprite to display
 	sf::Texture sprite_sheet;
 	if (!sprite_sheet.loadFromFile("assets\\grid.png")) {
@@ -31,22 +38,20 @@ int main()
 	// Setup a mouse Sprite
 	sf::Sprite mouse;
 	mouse.setTexture(mouse_texture);
-
-
+	
 
 	bool mouse_changer[3]{ 1,0,0 };
 
 	//Setup mouse
 	c2AABB aabb_mouse;
 	aabb_mouse.min = c2V(mouse.getPosition().x, mouse.getPosition().y);
-	aabb_mouse.max = c2V(mouse.getGlobalBounds().width, mouse.getGlobalBounds().width);
+	aabb_mouse.max = c2V(mouse.getPosition().x + mouse.getGlobalBounds().width, mouse.getPosition().y + mouse.getGlobalBounds().height);
 
 	c2Circle circle_mouse;
 	circle_mouse.p = { aabb_mouse.min.x + 42, aabb_mouse.min.y + 42 };
 	circle_mouse.r = 42;
 
 	c2Ray ray_mouse;
-
 
 	// Setup Players Default Animated Sprite
 	AnimatedSprite animated_sprite(sprite_sheet);
@@ -65,15 +70,15 @@ int main()
 
 	c2Capsule capsule_player;
 
-	c2Poly * polygon_player = new c2Poly;
 
-	polygon_player->count = 4;
-
-	polygon_player->verts[0] = { animated_sprite.getGlobalBounds().width / animated_sprite.getFrames().size(),
-		animated_sprite.getGlobalBounds().height / animated_sprite.getFrames().size() };
-	polygon_player->verts[1] = {0,0};
-	polygon_player->verts[2] = {0,0};
-	polygon_player->verts[3] = {0,0};
+	c2Poly polygon_player;
+	polygon_player.count = 4;
+	polygon_player.verts[0] = c2V(100,0);
+	polygon_player.verts[1] = c2V(100,85);
+	polygon_player.verts[2] = c2V(185,85);
+	polygon_player.verts[3] = c2V(185,0);
+	c2MakePoly(&polygon_player);
+	c2Manifold manifold;
 
 
 	c2Circle circle_player;
@@ -96,7 +101,7 @@ int main()
 
 		// Update mouse AABB
 		aabb_mouse.min = c2V(mouse.getPosition().x, mouse.getPosition().y);
-		aabb_mouse.max = c2V(mouse.getGlobalBounds().width, mouse.getGlobalBounds().width);
+		aabb_mouse.max = c2V(mouse.getPosition().x + mouse.getGlobalBounds().width, mouse.getPosition().y + mouse.getGlobalBounds().height);
 
 		circle_mouse.p = { aabb_mouse.min.x + 42, aabb_mouse.min.y + 42 };
 
@@ -129,21 +134,18 @@ int main()
 					mouse_changer[0] = 1;
 					mouse_changer[1] = 0;
 					mouse_changer[2] = 0;
-
 				}
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
 				{
 					mouse_changer[0] = 0;
 					mouse_changer[1] = 1;
 					mouse_changer[2] = 0;
-
 				}
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
 				{
 					mouse_changer[0] = 0;
 					mouse_changer[1] = 0;
 					mouse_changer[2] = 1;
-
 				}
 				break;
 			default:
@@ -164,17 +166,16 @@ int main()
 		// Check for collisions
 		if (mouse_changer[0])	// AABB
 		{
-			//result = c2AABBtoAABB(aabb_mouse, aabb_player);
-			//cout << ((result != 0) ? ("Collision AABB - AABB") : "") << endl;
+			result = c2AABBtoAABB(aabb_mouse, aabb_player);
+			cout << ((result != 0) ? ("Collision AABB - AABB") : "") << endl;
 
 			//result = c2AABBtoCapsule(aabb_mouse, capsule_player);
-		//	cout << ((result != 0) ? ("Collision AABB - Capsule") : "") << endl;
+			//cout << ((result != 0) ? ("Collision AABB - Capsule") : "") << endl;
 
-			result = c2AABBtoPoly(aabb_mouse, polygon_player, NULL);
-			cout << ((result != 0) ? ("Collision AABB - Poly") : "") << endl;
+			c2AABBtoPolyManifold(aabb_mouse, &polygon_player, NULL, &manifold);
+			cout << ((manifold.count != 0) ? ("Collision AABB - Poly") : "") << endl;
 
 			//ray
-
 		}
 		else if (mouse_changer[1]) // Circle
 		{
@@ -187,8 +188,8 @@ int main()
 			//result = c2CircletoCapsule(circle_mouse, capsule_player);
 			//cout << ((result != 0) ? ("Collision Circle - Capsule") : "") << endl;
 
-		//	result = c2CircletoPoly(circle_mouse, polygon_player, transformation);
-		//	cout << ((result != 0) ? ("Collision Circle - Poly") : "") << endl;
+			//result = c2CircletoPoly(circle_mouse, polygon_player, transformation);
+			//cout << ((result != 0) ? ("Collision Circle - Poly") : "") << endl;
 
 			//ray
 
@@ -197,13 +198,6 @@ int main()
 		{
 			
 		}
-		
-		
-		
-		
-
-	
-
 		
 
 
@@ -217,15 +211,14 @@ int main()
 
 
 
-
-
-
 		// Clear screen
 		window.clear();
 
 		// Draw the Players Current Animated Sprite
 		window.draw(player.getAnimatedSprite());
 		window.draw(mouse);
+		g.draw(aabb_mouse, sf::Color::Blue);
+		g.draw(polygon_player, sf::Color::Blue);
 
 		// Update the window
 		window.display();
