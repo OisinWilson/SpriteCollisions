@@ -39,7 +39,6 @@ int main()
 	sf::Sprite mouse;
 	mouse.setTexture(mouse_texture);
 	
-
 	bool mouse_changer[3]{ 1,0,0 };
 
 	//Setup mouse
@@ -65,6 +64,24 @@ int main()
 	animated_sprite.addFrame(sf::IntRect(343, 3, 84, 84));
 	animated_sprite.addFrame(sf::IntRect(428, 3, 84, 84));
 
+	AnimatedSprite polyShape(sprite_sheet);
+	polyShape.addFrame(sf::IntRect(3, 171, 84, 84));
+	polyShape.setPosition(200,102);
+
+	AnimatedSprite circleShape(sprite_sheet);
+	circleShape.addFrame(sf::IntRect(3, 87, 84, 84));
+	circleShape.setPosition(79, 459);
+
+	AnimatedSprite capsuleShape(sprite_sheet);
+	capsuleShape.addFrame(sf::IntRect(3, 255, 84, 168));
+	capsuleShape.setRotation(270);
+	capsuleShape.setPosition(465,192);
+
+	AnimatedSprite rayShape(sprite_sheet);
+	rayShape.addFrame(sf::IntRect(3, 425, 168, 84));
+	rayShape.setRotation(-1);
+	rayShape.setPosition(500,418);
+
 	// Setup Player
 	c2Manifold manifold;
 	c2Raycast cast;
@@ -75,32 +92,36 @@ int main()
 		animated_sprite.getGlobalBounds().height / animated_sprite.getFrames().size());
 
 	c2Capsule capsule_player;
-	capsule_player.a = c2V(500, 150);
-	capsule_player.b = c2V(600, 150);
-	capsule_player.r = 42;
+	capsule_player.a = c2V(509, 150);
+	capsule_player.b = c2V(593, 150);
+	capsule_player.r = 40;
 
 	c2Poly polygon_player;
-	polygon_player.count = 4;
+	polygon_player.count = 3;
 	polygon_player.verts[0] = c2V(200,100);
 	polygon_player.verts[1] = c2V(200,185);
 	polygon_player.verts[2] = c2V(285,185);
-	polygon_player.verts[3] = c2V(285,100);
 	c2MakePoly(&polygon_player);
 	
 
 	c2Circle circle_player;
-	circle_player.r = { 42 };
+	circle_player.r = { 40 };
 	circle_player.p = { 120,500 };
 	
 	c2Ray ray_player;
-	ray_player.p = c2V(500, 500);
+	ray_player.p = c2V(502, 500);
 	ray_player.d = c2Norm(c2V(2, -1));
-	ray_player.t = 200;
+	ray_player.t = 185;
 
 
 	// Setup the Player
 	Player player(animated_sprite);
 	Input input;
+
+	Player playerPoly(polyShape);
+	Player playerCircle(circleShape);
+	Player playerCapsule(capsuleShape);
+	Player PlayerRay(rayShape);
 
 	// Collision result
 	int result = 0;
@@ -172,6 +193,8 @@ int main()
 
 		// Update the Player
 		player.update();
+		playerPoly.update();
+		playerCircle.update();
 
 
 
@@ -181,63 +204,137 @@ int main()
 		{
 			result = c2AABBtoAABB(aabb_mouse, aabb_player);
 			cout << ((result != 0) ? ("Collision AABB - AABB") : "") << endl;
+			if (result) {
+				player.getAnimatedSprite().setColor(sf::Color(255, 0, 0));
+			}
+			else {
+				player.getAnimatedSprite().setColor(sf::Color(0, 255, 0));
+			}
 
 			result = c2AABBtoCapsule(aabb_mouse, capsule_player);
 			cout << ((result != 0) ? ("Collision AABB - Capsule") : "") << endl;
+			if (result) {
+				playerCapsule.getAnimatedSprite().setColor(sf::Color(255, 0, 0));
+			}
+			else {
+				playerCapsule.getAnimatedSprite().setColor(sf::Color(0, 255, 0));
+			}
 
 			c2AABBtoPolyManifold(aabb_mouse, &polygon_player, NULL, &manifold);
 			cout << ((manifold.count != 0) ? ("Collision AABB - Poly") : "") << endl;
+			if (manifold.count !=0) {
+				playerPoly.getAnimatedSprite().setColor(sf::Color(255, 0, 0));
+			}
+			else {
+				playerPoly.getAnimatedSprite().setColor(sf::Color(0, 255, 0));
+			}
 
 			result = c2RaytoAABB(ray_player, aabb_mouse, &cast);
 			cout << ((result != 0) ? ("Collision AABB - Ray") : "") << endl;
+			if (result) {
+				PlayerRay.getAnimatedSprite().setColor(sf::Color(255, 0, 0));
+			}
+			else {
+				PlayerRay.getAnimatedSprite().setColor(sf::Color(0, 255, 0));
+			}
 
 			result = c2CircletoAABB(circle_player, aabb_mouse);
 			cout << ((result != 0) ? ("Collision AABB - Circle") : "") << endl;
+			if (result) {
+				playerCircle.getAnimatedSprite().setColor(sf::Color(255, 0, 0));
+			}
+			else {
+				playerCircle.getAnimatedSprite().setColor(sf::Color(0, 255, 0));
+			}
 		}
 		else if (mouse_changer[1]) // Circle
 		{
 			result = c2CircletoAABB(circle_mouse, aabb_player);
 			cout << ((result != 0) ? ("Collision Circle - AABB") : "") << endl;
+			if (result) {
+				player.getAnimatedSprite().setColor(sf::Color(255, 0, 0));
+			}
+			else {
+				player.getAnimatedSprite().setColor(sf::Color(0, 255, 0));
+			}
 
 			result = c2CircletoCircle(circle_mouse, circle_player);
 			cout << ((result != 0) ? ("Collision Circle - Circle") : "") << endl;
+			if (result) {
+				playerCircle.getAnimatedSprite().setColor(sf::Color(255, 0, 0));
+			}
+			else {
+				playerCircle.getAnimatedSprite().setColor(sf::Color(0, 255, 0));
+			}
 
 			result = c2CircletoCapsule(circle_mouse, capsule_player);
 			cout << ((result != 0) ? ("Collision Circle - Capsule") : "") << endl;
+			if (result) {
+				playerCapsule.getAnimatedSprite().setColor(sf::Color(255, 0, 0));
+			}
+			else {
+				playerCapsule.getAnimatedSprite().setColor(sf::Color(0, 255, 0));
+			}
 
 			c2CircletoPolyManifold(circle_mouse, &polygon_player, NULL, &manifold);
 			cout << ((manifold.count != 0) ? ("Collision Circle - Poly") : "") << endl;
+			if (manifold.count !=0) {
+				playerPoly.getAnimatedSprite().setColor(sf::Color(255, 0, 0));
+			}
+			else {
+				playerPoly.getAnimatedSprite().setColor(sf::Color(0, 255, 0));
+			}
 
 			//issues
 			result = c2RaytoCircle(ray_player, circle_mouse, &cast);
 			cout << ((result != 0) ? ("Collision Circle - Ray") : "") << endl;
+			if (result) {
+				PlayerRay.getAnimatedSprite().setColor(sf::Color(255, 0, 0));
+			}
+			else {
+				PlayerRay.getAnimatedSprite().setColor(sf::Color(0, 255, 0));
+			}
 
 		}
 		else if (mouse_changer[2]) // Ray
 		{
 			result = c2RaytoAABB(ray_mouse, aabb_player, &cast);
 			cout << ((result != 0) ? ("Collision Ray - AABB") : "") << endl;
+			if (result) {
+				player.getAnimatedSprite().setColor(sf::Color(255, 0, 0));
+			}
+			else {
+				player.getAnimatedSprite().setColor(sf::Color(0, 255, 0));
+			}
 
 			result = c2RaytoCircle(ray_mouse, circle_player, &cast);
 			cout << ((result != 0) ? ("Collision Ray - Circle") : "") << endl;
+			if (result) {
+				playerCircle.getAnimatedSprite().setColor(sf::Color(255, 0, 0));
+			}
+			else {
+				playerCircle.getAnimatedSprite().setColor(sf::Color(0, 255, 0));
+			}
 
 			result = c2RaytoCapsule(ray_mouse, capsule_player, &cast);
 			cout << ((result != 0) ? ("Collision Ray - Capsule") : "") << endl;
+			if (result) {
+				playerCapsule.getAnimatedSprite().setColor(sf::Color(255, 0, 0));
+			}
+			else {
+				playerCapsule.getAnimatedSprite().setColor(sf::Color(0, 255, 0));
+			}
 
 			result = c2RaytoPoly(ray_mouse,&polygon_player,NULL,&cast);
 			cout << ((result != 0) ? ("Collision Ray - Poly") : "") << endl;
+			if (result) {
+				playerPoly.getAnimatedSprite().setColor(sf::Color(255, 0, 0));
+			}
+			else {
+				playerPoly.getAnimatedSprite().setColor(sf::Color(0, 255, 0));
+			}
 		}
-		
-
-
-		// change colour for intersection, 
-		if (result){
-			player.getAnimatedSprite().setColor(sf::Color(255,0,0));
-		}
-		else {
-			player.getAnimatedSprite().setColor(sf::Color(0, 255, 0));
-		}
-
+	
 
 
 		// Clear screen
@@ -245,17 +342,20 @@ int main()
 
 		// Draw the Players Current Animated Sprite
 		window.draw(player.getAnimatedSprite());
+		window.draw(playerPoly.getAnimatedSprite());
+		window.draw(playerCircle.getAnimatedSprite());
+		window.draw(playerCapsule.getAnimatedSprite());
+
+		if (!mouse_changer[2]) {
+			window.draw(PlayerRay.getAnimatedSprite());
+		}
+
 		window.draw(mouse);
 
 		//Remove later
 		g.draw(aabb_mouse, sf::Color::Cyan);
 		g.draw(circle_mouse, sf::Color::Cyan);
 		g.draw(ray_mouse, sf::Color::Cyan);
-
-		g.draw(polygon_player, sf::Color::Blue);
-		g.draw(circle_player, sf::Color::Blue);
-		g.draw(capsule_player, sf::Color::Blue);
-		g.draw(ray_player, sf::Color::Blue);
 
 		// Update the window
 		window.display();
