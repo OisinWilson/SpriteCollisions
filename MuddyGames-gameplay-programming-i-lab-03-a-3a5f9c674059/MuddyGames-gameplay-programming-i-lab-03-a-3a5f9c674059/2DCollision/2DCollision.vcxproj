@@ -23,6 +23,7 @@
     <ClInclude Include="Animation.h" />
     <ClInclude Include="Climbing.h" />
     <ClInclude Include="Debug.h" />
+    <ClInclude Include="gameCollision.h" />
     <ClInclude Include="tinyc2.h" />
     <ClInclude Include="Idle.h" />
     <ClInclude Include="Input.h" />
@@ -34,6 +35,7 @@
     <ClCompile Include="AnimatedSprite.cpp" />
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Climbing.cpp" />
+    <ClCompile Include="gameCollision.cpp" />
     <ClCompile Include="Idle.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Jumping.cpp" />
