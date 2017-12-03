@@ -7,8 +7,6 @@
 #include <Input.h>
 #include <Debug.h>
 
-#include<Tinyc2Debug.hpp>
-
 
 // make sure to get rid of the debug before final solution
 
@@ -19,8 +17,6 @@ int main()
 	// Create the main window
 	sf::RenderWindow window(sf::VideoMode(800, 600), "SFML window");
 
-
-	Tinyc2Debug g(window);
 	// Load a sprite to display
 	sf::Texture sprite_sheet;
 	if (!sprite_sheet.loadFromFile("assets\\grid.png")) {
@@ -29,17 +25,30 @@ int main()
 	}
 
 	// Load a mouse texture to display
-	sf::Texture mouse_texture;
-	if (!mouse_texture.loadFromFile("assets\\mouse.png")) {
+	sf::Texture mouse_texture_aabb;
+	if (!mouse_texture_aabb.loadFromFile("assets\\mouse.png")) {
+		DEBUG_MSG("Failed to load file");
+		return EXIT_FAILURE;
+	}
+	sf::Texture mouse_texture_circle;
+	if (!mouse_texture_circle.loadFromFile("assets\\mouseCircle.png")) {
+		DEBUG_MSG("Failed to load file");
+		return EXIT_FAILURE;
+	}
+	sf::Texture mouse_texture_ray;
+	if (!mouse_texture_ray.loadFromFile("assets\\mouseRay.png")) {
 		DEBUG_MSG("Failed to load file");
 		return EXIT_FAILURE;
 	}
 
+
+
 	// Setup a mouse Sprite
-	sf::Sprite mouse;
-	mouse.setTexture(mouse_texture);
-	
 	bool mouse_changer[3]{ 1,0,0 };
+	sf::Sprite mouse;	
+
+	mouse.setTexture(mouse_texture_aabb);
+
 
 	//Setup mouse
 	c2AABB aabb_mouse;
@@ -168,18 +177,21 @@ int main()
 					mouse_changer[0] = 1;
 					mouse_changer[1] = 0;
 					mouse_changer[2] = 0;
+					mouse.setTexture(mouse_texture_aabb);
 				}
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
 				{
 					mouse_changer[0] = 0;
 					mouse_changer[1] = 1;
 					mouse_changer[2] = 0;
+					mouse.setTexture(mouse_texture_circle);
 				}
 				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
 				{
 					mouse_changer[0] = 0;
 					mouse_changer[1] = 0;
 					mouse_changer[2] = 1;
+					mouse.setTexture(mouse_texture_ray);
 				}
 				break;
 			default:
@@ -336,7 +348,6 @@ int main()
 		}
 	
 
-
 		// Clear screen
 		window.clear();
 
@@ -351,11 +362,6 @@ int main()
 		}
 
 		window.draw(mouse);
-
-		//Remove later
-		g.draw(aabb_mouse, sf::Color::Cyan);
-		g.draw(circle_mouse, sf::Color::Cyan);
-		g.draw(ray_mouse, sf::Color::Cyan);
 
 		// Update the window
 		window.display();
